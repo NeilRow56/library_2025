@@ -5,7 +5,7 @@ import SearchBar from './search-bar'
 export default function HomeHeader() {
   return (
     <>
-      <header className='container mx-auto py-2 lg:py-4'>
+      <header className='container mx-auto px-2 py-2 lg:py-4'>
         {/* mobile */}
         <div className='flex flex-col justify-between p-2 sm:hidden'>
           {/* logo */}
@@ -17,9 +17,9 @@ export default function HomeHeader() {
         {/* desktop */}
         <div className='hidden items-center justify-between sm:flex'>
           {/* logo */}
-          <div className='flex items-center'>
-            <Logo />
-          </div>
+
+          <Logo />
+
           <SearchBar />
         </div>
       </header>
