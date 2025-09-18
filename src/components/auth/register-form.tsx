@@ -99,9 +99,7 @@ export const RegisterForm = ({ onSuccess }: RegisterFormProps) => {
     )
 
     if (success) {
-      toast.success(
-        `${message as string} Please check your email for verification.`
-      )
+      toast.success(`${message as string} User created successfully.`)
       // router.push('/')
       if (onSuccess) {
         onSuccess()

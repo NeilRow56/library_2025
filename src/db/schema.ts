@@ -1,11 +1,28 @@
-import { pgTable, text, timestamp, boolean } from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm'
+import {
+  pgTable,
+  text,
+  timestamp,
+  boolean,
+  pgEnum,
+  varchar,
+  integer
+} from 'drizzle-orm/pg-core'
+
+export const role = pgEnum('role', ['admin', 'manager', 'team'])
+
+export type Role = (typeof role.enumValues)[number]
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
-  name: text('name').notNull(),
+  name: varchar('name').notNull(),
   email: text('email').notNull().unique(),
-  emailVerified: boolean('email_verified').default(false).notNull(),
+  role: role('role').default('admin').notNull(),
+  emailVerified: boolean('email_verified')
+    .$defaultFn(() => false)
+    .notNull(),
   image: text('image'),
+  active: boolean('active').notNull().default(true),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()
@@ -61,9 +78,67 @@ export const verification = pgTable('verification', {
     .notNull()
 })
 
+export const book_categories = pgTable('book_categories', {
+  id: text('id').primaryKey(),
+  category_name: varchar('name').notNull()
+})
+export type BookCategories = typeof book_categories.$inferSelect
+
+export const CategoryRelations = relations(book_categories, ({ many }) => ({
+  Books: many(books)
+}))
+
+export const books = pgTable('books', {
+  id: text('id').primaryKey(),
+  bookCategoriesId: text('categories_id')
+    .notNull()
+    .references(() => book_categories.id, { onDelete: 'cascade' }),
+  isbn: varchar('isbn').notNull(),
+  name: varchar('name').notNull(),
+  author: varchar('author').notNull(),
+  is_active: boolean('active').notNull().default(true),
+  no_of_copies: integer('no_of_copies'),
+  publish_year: integer('publish_year'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at')
+    .defaultNow()
+    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .notNull()
+})
+export type Books = typeof books.$inferSelect
+
+export const BooksRelations = relations(books, ({ many }) => ({
+  BookCategories: many(book_categories)
+}))
+
+export const borrowings = pgTable('borrowings', {
+  id: text('id').primaryKey(),
+  bookId: text('books_id')
+    .notNull()
+    .references(() => books.id, { onDelete: 'cascade' }),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'restrict' }),
+  borrow_date: timestamp({ withTimezone: true }),
+  due_date: timestamp({ withTimezone: true }),
+  return_date: timestamp({ withTimezone: true })
+})
+
+// BORROWINGS RELATIONS TO COMPLETE
+export const BorrowingRelationships = relations(borrowings, ({ many }) => ({
+  BookCategories: many(book_categories),
+  User: many(user)
+}))
+
 export const schema = {
   user,
   account,
   session,
-  verification
+  verification,
+  book_categories,
+  CategoryRelations,
+  books,
+  BooksRelations,
+  borrowings,
+  BorrowingRelationships
 }
