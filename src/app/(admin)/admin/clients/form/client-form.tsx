@@ -1,0 +1,134 @@
+'use client'
+
+import { zodResolver } from '@hookform/resolvers/zod'
+
+import { useForm } from 'react-hook-form'
+
+import { useAction } from 'next-safe-action/hooks'
+
+import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
+
+import { Client, User } from '@/db/schema'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { InputWithLabel } from '@/components/form/input-with-label'
+
+import {
+  insertClientSchemaType,
+  insertClientSchema
+} from '@/zod-schemas/clients'
+
+import { useState } from 'react'
+import { saveClientAction } from '@/server/clients'
+import { toast } from 'sonner'
+
+import { LoaderCircle } from 'lucide-react'
+import { DisplayServerActionResponse } from '@/components/admin/display-server-action-response'
+
+interface ClientFormProps {
+  user: User // You must have a user to start a customer - so it is not optional
+  client?: Client
+}
+
+export const ClientForm = ({ user, client }: ClientFormProps) => {
+  const [isLoading] = useState(false)
+  const defaultValues: insertClientSchemaType = {
+    id: client?.id ?? '',
+    name: client?.name ?? '',
+    userId: client?.userId ?? user.id
+  }
+  const form = useForm<insertClientSchemaType>({
+    resolver: zodResolver(insertClientSchema),
+    mode: 'onBlur',
+    defaultValues
+  })
+
+  const {
+    execute: executeSave,
+    result: saveResult,
+    isPending: isSaving,
+    reset: resetSaveAction
+  } = useAction(saveClientAction, {
+    onSuccess({ data }) {
+      if (data?.message) {
+        toast.success(`Client ${client ? 'updated ' : 'added'} successfully`)
+      }
+    },
+    onError({ error }) {
+      console.log(error)
+      toast.error(`Failed to ${client ? 'update' : 'add'} client`)
+    }
+  })
+
+  async function submitForm(data: insertClientSchemaType) {
+    executeSave(data)
+  }
+  return (
+    <div className='container mx-auto mt-24'>
+      <div className='flex flex-col gap-1 text-center sm:px-8'>
+        <DisplayServerActionResponse result={saveResult} />
+        <div className='items-center justify-center'>
+          <h2 className='text-primary text-2xl font-bold lg:text-3xl'>
+            {client?.id ? 'Edit' : 'New'} Client{' '}
+            {client?.id ? `#${client.id}` : 'Form'}
+          </h2>
+        </div>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(submitForm)}
+            className='mx-auto mt-8 flex w-4xl flex-col gap-4 rounded-lg border p-8 md:gap-8 xl:flex-row'
+          >
+            <div className='flex w-full flex-col gap-4'>
+              <FormField
+                control={form.control}
+                name='userId'
+                render={({ field }) => (
+                  <FormItem className='hidden'>
+                    <FormControl>
+                      <Input placeholder='' {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <InputWithLabel<insertClientSchemaType>
+                fieldTitle='Name'
+                nameInSchema='name'
+              />
+
+              <div className='flex max-w-lg justify-between'>
+                <Button
+                  type='submit'
+                  className='w-1/4'
+                  variant='default'
+                  title='Save'
+                  disabled={isSaving}
+                >
+                  {isSaving ? (
+                    <>
+                      <LoaderCircle className='animate-spin' /> Saving
+                    </>
+                  ) : (
+                    'Save'
+                  )}
+                </Button>
+
+                <Button
+                  type='button'
+                  className='w-1/4'
+                  variant='destructive'
+                  title='Reset'
+                  onClick={() => {
+                    form.reset(defaultValues)
+                    resetSaveAction()
+                  }}
+                >
+                  Reset
+                </Button>
+              </div>
+            </div>
+          </form>
+        </Form>
+      </div>
+    </div>
+  )
+}

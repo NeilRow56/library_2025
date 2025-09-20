@@ -1,7 +1,14 @@
 export default function Home() {
   return (
-    <div className='grid min-h-screen grid-rows-[20px_1fr_20px] items-center justify-items-center gap-16 p-8 pb-20 font-[family-name:var(--font-geist-sans)] sm:p-20'>
-      Home Page
-    </div>
+    <>
+      <div className='container mx-auto flex h-[85vh] flex-col justify-center space-y-16 p-16 sm:p-32'>
+        <h2>New arrivals</h2>
+        {/* Add new arrivals */}
+        <h2>Recently reviewed</h2>
+        {/* Recently reveiwed */}
+        <h2>Staff picks</h2>
+        {/* staff picks */}
+      </div>
+    </>
   )
 }

@@ -11,6 +11,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger
 } from '@/components/ui/navigation-menu'
+import { User2Icon } from 'lucide-react'
 
 export function Navbar() {
   return (
@@ -62,6 +63,22 @@ export function Navbar() {
                           </p>
                         </Link>
                       </NavigationMenuLink>
+                      <NavigationMenuLink asChild>
+                        <Link href='/admin/clients/form'>
+                          <div className='font-medium'>Clients</div>
+                          <p className='text-muted-foreground text-sm text-wrap'>
+                            Client creation
+                          </p>
+                        </Link>
+                      </NavigationMenuLink>
+                      <NavigationMenuLink asChild>
+                        <Link href='/auth'>
+                          <div className='font-medium'>Auth</div>
+                          <p className='text-muted-foreground text-sm text-wrap'>
+                            Authentication
+                          </p>
+                        </Link>
+                      </NavigationMenuLink>
                     </li>
                   </ul>
                 </NavigationMenuContent>
@@ -69,6 +86,7 @@ export function Navbar() {
             </NavigationMenuList>
           </NavigationMenu>
         </div>
+        <User2Icon />
       </div>
     </nav>
   )

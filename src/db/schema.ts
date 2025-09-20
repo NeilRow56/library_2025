@@ -1,4 +1,4 @@
-import { relations } from 'drizzle-orm'
+import { relations, sql } from 'drizzle-orm'
 import {
   pgTable,
   text,
@@ -78,14 +78,37 @@ export const verification = pgTable('verification', {
     .notNull()
 })
 
+export const clients = pgTable('clients', {
+  id: text('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
+  name: varchar('name').notNull(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'restrict' }),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+})
+
+export type Client = typeof clients.$inferSelect
+
 export const book_categories = pgTable('book_categories', {
   id: text('id').primaryKey(),
-  category_name: varchar('name').notNull()
+  userId: text('user_id')
+    .notNull()
+    .references(() => user.id, { onDelete: 'restrict' }),
+  name: varchar('name').notNull()
 })
 export type BookCategories = typeof book_categories.$inferSelect
 
 export const CategoryRelations = relations(book_categories, ({ many }) => ({
-  Books: many(books)
+  books: many(books)
+}))
+export const usersRelations = relations(book_categories, ({ one }) => ({
+  user: one(user, {
+    fields: [book_categories.userId],
+    references: [user.id]
+  })
 }))
 
 export const books = pgTable('books', {
@@ -137,6 +160,7 @@ export const schema = {
   verification,
   book_categories,
   CategoryRelations,
+  usersRelations,
   books,
   BooksRelations,
   borrowings,
