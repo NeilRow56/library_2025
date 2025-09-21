@@ -15,84 +15,116 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog'
 
-import { Pencil } from 'lucide-react'
+import { PencilIcon } from 'lucide-react'
 
-import { getCurrentUserId } from '@/server/users'
+import { getCurrentUserId, getUserDetails } from '@/server/users'
 import { redirect } from 'next/navigation'
 import { EmptyState } from '@/components/shared/emply-state'
 import { getUserCategories } from '@/server/categories'
+import DeleteCategoryButton from './delete-category-button'
+import { Button } from '@/components/ui/button'
+import { AddCategoryButton } from './create-category-button'
+import { BackButton } from '@/components/shared/back-button'
 
-export default async function CustomersTable() {
+export default async function CategoriesByUserId2Table() {
   const { userId } = await getCurrentUserId()
   if (userId == null) return redirect('/auth/sign-in')
 
-  const categories = await getUserCategories(userId)
+  if (userId) {
+    const user = await getUserDetails(userId)
 
-  console.log(categories)
-
-  if (customers.length === 0) {
-    return (
-      <>
-        <div className='mx-auto flex max-w-6xl flex-col gap-2'>
-          <EmptyState
-            title='Categoriess'
-            description='You have no categories yet. Click on the button above to create your first category'
+    if (!user) {
+      return (
+        <>
+          <h2 className='mb-2 text-2xl'>User ID #{userId} not found</h2>
+          <BackButton
+            title='Go Back'
+            variant='default'
+            className='flex w-[100px]'
           />
+        </>
+      )
+    }
+
+    const categories = await getUserCategories(userId)
+
+    if (categories.length === 0) {
+      return (
+        <>
+          <div className='mx-auto flex max-w-6xl flex-col gap-2'>
+            <EmptyState
+              title='Categories'
+              description='You have no categories yet. Click on the button below to create your first category'
+            />
+          </div>
+
+          <div className='- mt-12 flex w-full justify-center'>
+            {/* <Button asChild size='lg' className='i flex w-[200px]'>
+            <Link href='/admin/categories/form'>Create Category</Link>
+          </Button> */}
+            <AddCategoryButton user={user} />
+          </div>
+        </>
+      )
+    }
+
+    return (
+      <div className='container mx-auto my-6 max-w-2xl'>
+        <div className='flex w-full items-center justify-between'>
+          <span className='text-xl font-bold'>Categories</span>
+
+          {/* <Button asChild size='sm' className='flex'>
+          <Link href='/admin/clients/form'>Create category</Link>
+        </Button> */}
+          <AddCategoryButton user={user} />
         </div>
-      </>
+
+        <Table>
+          <TableCaption className='text-xl font-bold'>
+            A list of your categories.
+          </TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead className='w-[100px]'>ID</TableHead>
+              <TableHead>Name</TableHead>
+
+              <TableHead className='text-right'>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {categories.map(category => (
+              <TableRow key={category.id}>
+                <TableCell className='font-medium'>
+                  {' '}
+                  {category.id.slice(0, 8)}
+                </TableCell>
+                <TableCell>{category.name}</TableCell>
+
+                <TableCell className='space-x-2 text-right'>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant='ghost' className='cursor-pointer'>
+                        <PencilIcon className='size-4 text-red-500' />
+                      </Button>
+                    </DialogTrigger>
+
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Edit Category</DialogTitle>
+                        Client Form
+                      </DialogHeader>
+                    </DialogContent>
+                  </Dialog>
+                  {/* <Button variant='ghost' className='mr-2 cursor-pointer'>
+                    <PencilIcon />
+                  </Button> */}
+                  <DeleteCategoryButton categoryId={category.id} />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     )
   }
-
-  return (
-    <Table>
-      <TableCaption>
-        When editing customer information the original details are retained in
-        the form until you close it. This is in case you want to revert to the
-        original information..
-      </TableCaption>
-      <TableHeader>
-        <TableRow>
-          <TableHead className='w-[100px]'>ID</TableHead>
-          <TableHead className='w-[100px]'>Email</TableHead>
-          <TableHead>Username</TableHead>
-          <TableHead>Notes</TableHead>
-          <TableHead>UserId</TableHead>
-          <TableHead className='text-right'>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {customers.map(customer => (
-          <TableRow key={customer.id}>
-            <TableCell className='font-medium'>
-              {customer.id.slice(0, 8)}
-            </TableCell>
-            <TableCell className='font-medium'>{customer.email}</TableCell>
-            <TableCell>{customer.username}</TableCell>
-            <TableCell>{customer?.notes}</TableCell>
-            <TableCell className='font-medium'>
-              {customer.userId.slice(0, 8)}
-            </TableCell>
-            <TableCell className='text-right'>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant='ghost'>
-                    <Pencil className='size-4' />
-                  </Button>
-                </DialogTrigger>
-
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle></DialogTitle>
-                    <CreateCustomerButton customer={customer} />
-                  </DialogHeader>
-                </DialogContent>
-              </Dialog>
-
-              <DeleteCustomerButton customerId={customer.id} />
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  )
 }

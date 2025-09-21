@@ -18,7 +18,6 @@ import {
   insertClientSchema
 } from '@/zod-schemas/clients'
 
-import { useState } from 'react'
 import { saveClientAction } from '@/server/clients'
 import { toast } from 'sonner'
 
@@ -31,7 +30,6 @@ interface ClientFormProps {
 }
 
 export const ClientForm = ({ user, client }: ClientFormProps) => {
-  const [isLoading] = useState(false)
   const defaultValues: insertClientSchemaType = {
     id: client?.id ?? '',
     name: client?.name ?? '',

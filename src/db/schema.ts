@@ -93,23 +93,15 @@ export const clients = pgTable('clients', {
 export type Client = typeof clients.$inferSelect
 
 export const book_categories = pgTable('book_categories', {
-  id: text('id').primaryKey(),
+  id: text('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   userId: text('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'restrict' }),
   name: varchar('name').notNull()
 })
 export type BookCategories = typeof book_categories.$inferSelect
-
-export const CategoryRelations = relations(book_categories, ({ many }) => ({
-  books: many(books)
-}))
-export const usersRelations = relations(book_categories, ({ one }) => ({
-  user: one(user, {
-    fields: [book_categories.userId],
-    references: [user.id]
-  })
-}))
 
 export const books = pgTable('books', {
   id: text('id').primaryKey(),
@@ -130,10 +122,6 @@ export const books = pgTable('books', {
 })
 export type Books = typeof books.$inferSelect
 
-export const BooksRelations = relations(books, ({ many }) => ({
-  BookCategories: many(book_categories)
-}))
-
 export const borrowings = pgTable('borrowings', {
   id: text('id').primaryKey(),
   bookId: text('books_id')
@@ -148,10 +136,6 @@ export const borrowings = pgTable('borrowings', {
 })
 
 // BORROWINGS RELATIONS TO COMPLETE
-export const BorrowingRelationships = relations(borrowings, ({ many }) => ({
-  BookCategories: many(book_categories),
-  User: many(user)
-}))
 
 export const schema = {
   user,
@@ -159,10 +143,6 @@ export const schema = {
   session,
   verification,
   book_categories,
-  CategoryRelations,
-  usersRelations,
   books,
-  BooksRelations,
-  borrowings,
-  BorrowingRelationships
+  borrowings
 }

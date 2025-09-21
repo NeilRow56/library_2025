@@ -7,7 +7,7 @@ import { eq } from 'drizzle-orm'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-export async function getClientUser(id: string) {
+export async function getUserDetails(id: string) {
   const userDetails = await db.select().from(user).where(eq(user.id, id))
 
   return userDetails[0]

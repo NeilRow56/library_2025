@@ -1,7 +1,7 @@
 import { BackButton } from '@/components/shared/back-button'
 import { auth } from '@/lib/auth'
 import { getClientTwo } from '@/server/clients'
-import { getClientUser } from '@/server/users'
+import { getUserDetails } from '@/server/users'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { ClientForm } from './client-form'
@@ -49,7 +49,7 @@ export default async function ClientFormPage({
 
     // New client form
     if (userId) {
-      const user = await getClientUser(userId)
+      const user = await getUserDetails(userId)
 
       if (!user) {
         return (
@@ -94,7 +94,7 @@ export default async function ClientFormPage({
         )
       }
 
-      const user = await getClientUser(client.userId)
+      const user = await getUserDetails(client.userId)
 
       if (userId !== client.userId) {
         return (

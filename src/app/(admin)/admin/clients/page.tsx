@@ -24,71 +24,23 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
-
-import { ReactNode } from 'react'
-
-export function SkeletonButton({ className }: { className?: string }) {
-  return (
-    <div
-      className={cn(
-        buttonVariants({
-          variant: 'secondary',
-          className: 'pointer-events-none w-24 animate-pulse'
-        }),
-        className
-      )}
-    />
-  )
-}
-
-export function SkeletonArray({
-  amount,
-  children
-}: {
-  amount: number
-  children: ReactNode
-}) {
-  return Array.from({ length: amount }).map(() => children)
-}
-
-export function SkeletonText({
-  rows = 1,
-  size = 'md',
-  className
-}: {
-  rows?: number
-  size?: 'md' | 'lg'
-  className?: string
-}) {
-  return (
-    <div className='flex flex-col gap-1'>
-      <SkeletonArray amount={rows}>
-        <div
-          className={cn(
-            'bg-secondary w-full animate-pulse rounded-sm',
-            rows > 1 && 'last:w-3/4',
-            size === 'md' && 'h-3',
-            size === 'lg' && 'h-5',
-            className
-          )}
-        />
-      </SkeletonArray>
-    </div>
-  )
-}
 import { db } from '@/db'
 import { clients } from '@/db/schema'
 import { and, asc, eq } from 'drizzle-orm'
 import { getCurrentUserId } from '@/server/users'
 import { redirect } from 'next/navigation'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
 import { PencilIcon } from 'lucide-react'
 import { EmptyState } from '@/components/shared/emply-state'
 
 import DeleteClientButton from '@/components/admin/clients/delete-client-button'
+import {
+  SkeletonArray,
+  SkeletonButton,
+  SkeletonText
+} from '@/components/shared/skeleton'
 
 export const metadata = {
   title: 'Client Search'
