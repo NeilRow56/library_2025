@@ -20,11 +20,14 @@ import { PencilIcon } from 'lucide-react'
 import { getCurrentUserId, getUserDetails } from '@/server/users'
 import { redirect } from 'next/navigation'
 import { EmptyState } from '@/components/shared/emply-state'
-import { getUserCategories } from '@/server/categories'
+
 import DeleteCategoryButton from './delete-category-button'
 import { Button } from '@/components/ui/button'
 import { AddCategoryButton } from './create-category-button'
 import { BackButton } from '@/components/shared/back-button'
+import { book_categories } from '@/db/schema'
+import { and, asc, eq } from 'drizzle-orm'
+import { db } from '@/db'
 
 export default async function CategoriesByUserId2Table() {
   const { userId } = await getCurrentUserId()
@@ -127,4 +130,18 @@ export default async function CategoriesByUserId2Table() {
       </div>
     )
   }
+}
+
+async function getUserCategories(userId: string) {
+  const categoriesByUserId = await db
+    .select({
+      id: book_categories.id,
+      name: book_categories.name,
+      userId: book_categories.userId
+    })
+    .from(book_categories)
+    .where(and(eq(book_categories.userId, userId)))
+    .orderBy(asc(book_categories.name))
+
+  return categoriesByUserId
 }

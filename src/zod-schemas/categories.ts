@@ -4,6 +4,10 @@ import { book_categories } from '@/db/schema'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 
 export const insertCategorySchema = createInsertSchema(book_categories, {
+  // id: schema =>
+  //   schema
+  //     .min(1, 'ID is required')
+  //     .max(100, { error: 'ID must be at most 100 characters!' }),
   name: schema =>
     schema
       .min(1, 'Name is required')
@@ -14,4 +18,5 @@ export const insertCategorySchema = createInsertSchema(book_categories, {
 export const selectCategorySchema = createSelectSchema(book_categories)
 
 export type insertCategorySchemaType = z.infer<typeof insertCategorySchema>
+
 export type selectCategorySchemaType = z.infer<typeof selectCategorySchema>

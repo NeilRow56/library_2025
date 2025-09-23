@@ -4,71 +4,46 @@ import { zodResolver } from '@hookform/resolvers/zod'
 
 import { useForm } from 'react-hook-form'
 
-import { useAction } from 'next-safe-action/hooks'
-
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 
-import { Client, User } from '@/db/schema'
+import { BookCategories, User } from '@/db/schema'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { InputWithLabel } from '@/components/form/input-with-label'
 
 import {
-  insertClientSchemaType,
-  insertClientSchema
-} from '@/zod-schemas/clients'
+  insertCategorySchema,
+  insertCategorySchemaType
+} from '@/zod-schemas/categories'
 
-import { saveClientAction } from '@/server/clients'
-import { toast } from 'sonner'
-
-import { LoaderCircle } from 'lucide-react'
-import { DisplayServerActionResponse } from '@/components/admin/display-server-action-response'
-
-interface ClientFormProps {
+interface CategoryFormProps {
   user: User // You must have a user to start a customer - so it is not optional
-  client?: Client
+  category?: BookCategories
 }
 
-export const ClientForm = ({ user, client }: ClientFormProps) => {
-  const defaultValues: insertClientSchemaType = {
-    id: client?.id ?? '',
-    name: client?.name ?? '',
-    userId: client?.userId ?? user.id
+export const CategoryForm = ({ user, category }: CategoryFormProps) => {
+  const defaultValues: insertCategorySchemaType = {
+    id: category?.id ?? '',
+    name: category?.name ?? '',
+    userId: category?.userId ?? user.id
   }
-  const form = useForm<insertClientSchemaType>({
-    resolver: zodResolver(insertClientSchema),
+  const form = useForm<insertCategorySchemaType>({
+    resolver: zodResolver(insertCategorySchema),
     mode: 'onBlur',
     defaultValues
   })
 
-  const {
-    execute: executeSave,
-    result: saveResult,
-    isPending: isSaving,
-    reset: resetSaveAction
-  } = useAction(saveClientAction, {
-    onSuccess({ data }) {
-      if (data?.message) {
-        toast.success(`Client ${client ? 'updated ' : 'added'} successfully`)
-      }
-    },
-    onError({ error }) {
-      console.log(error)
-      toast.error(`Failed to ${client ? 'update' : 'add'} client`)
-    }
-  })
-
-  async function submitForm(data: insertClientSchemaType) {
-    executeSave(data)
+  async function submitForm(data: insertCategorySchemaType) {
+    console.log(data)
   }
   return (
     <div className='container mx-auto mt-24'>
       <div className='flex flex-col gap-1 text-center sm:px-8'>
-        <DisplayServerActionResponse result={saveResult} />
+        {/* <DisplayServerActionResponse result={saveResult} /> */}
         <div className='items-center justify-center'>
           <h2 className='text-primary text-2xl font-bold lg:text-3xl'>
-            {client?.id ? 'Edit' : 'New'} Client{' '}
-            {client?.id ? `#${client.id}` : 'Form'}
+            {category?.id ? 'Edit' : 'New'} Category{' '}
+            {category?.id ? `#${category.id}` : 'Form'}
           </h2>
         </div>
         <Form {...form}>
@@ -88,7 +63,7 @@ export const ClientForm = ({ user, client }: ClientFormProps) => {
                   </FormItem>
                 )}
               />
-              <InputWithLabel<insertClientSchemaType>
+              <InputWithLabel<insertCategorySchemaType>
                 fieldTitle='Name'
                 nameInSchema='name'
               />
@@ -99,15 +74,16 @@ export const ClientForm = ({ user, client }: ClientFormProps) => {
                   className='w-1/4'
                   variant='default'
                   title='Save'
-                  disabled={isSaving}
+                  //   disabled={isSaving}
                 >
-                  {isSaving ? (
+                  {/* {isSaving ? (
                     <>
                       <LoaderCircle className='animate-spin' /> Saving
                     </>
                   ) : (
                     'Save'
-                  )}
+                  )} */}
+                  Save
                 </Button>
 
                 <Button
@@ -117,7 +93,7 @@ export const ClientForm = ({ user, client }: ClientFormProps) => {
                   title='Reset'
                   onClick={() => {
                     form.reset(defaultValues)
-                    resetSaveAction()
+                    // resetSaveAction()
                   }}
                 >
                   Reset

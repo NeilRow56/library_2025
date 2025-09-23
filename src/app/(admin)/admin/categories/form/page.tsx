@@ -1,30 +1,30 @@
-import { BackButton } from '@/components/shared/back-button'
 import { auth } from '@/lib/auth'
-import { getClientTwo } from '@/server/clients'
-import { getUserDetails } from '@/server/users'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { ClientForm } from './client-form'
+import { getCategoryTwo, getCategoryUser } from '@/server/categories'
+import { CategoryForm } from '@/components/admin/categories/category-form'
+
+import { BackButton } from '@/components/shared/back-button'
 
 export async function generateMetadata({
   searchParams
 }: {
   searchParams: Promise<{ [key: string]: string | undefined }>
 }) {
-  const { clientId } = await searchParams
+  const { categoryId } = await searchParams
 
-  if (!clientId) return { title: 'New Client' }
+  if (!categoryId) return { title: 'New Category' }
 
-  return { title: `Edit Client #${clientId}` }
+  return { title: `Edit Category #${categoryId}` }
 }
 
-export default async function ClientFormPage({
+export default async function CategoryFormPage({
   searchParams
 }: {
   searchParams: Promise<{ [key: string]: string | undefined }>
 }) {
   try {
-    const { clientId } = await searchParams
+    const { categoryId } = await searchParams
 
     const session = await auth.api.getSession({
       headers: await headers()
@@ -36,11 +36,11 @@ export default async function ClientFormPage({
 
     const userId = session.session.userId
 
-    if (!userId && !clientId) {
+    if (!userId && !categoryId) {
       return (
         <>
           <h2 className='mb-2 text-2xl'>
-            Client ID OR User ID required to load client form
+            Category ID OR User ID required to load category form
           </h2>
           <BackButton title='Go Back' variant='default' className='w-[100px]' />
         </>
@@ -49,7 +49,7 @@ export default async function ClientFormPage({
 
     // New client form
     if (userId) {
-      const user = await getUserDetails(userId)
+      const user = await getCategoryUser(userId)
 
       if (!user) {
         return (
@@ -76,27 +76,33 @@ export default async function ClientFormPage({
       //   }
 
       // return client form
-      if (userId && !clientId) {
-        return <ClientForm user={user} />
+      if (userId && !categoryId) {
+        return (
+          <div className='flex h-dvh w-full rounded-3xl bg-gray-100'>
+            <CategoryForm user={user} />
+          </div>
+        )
       }
     }
 
     // Edit client form
-    if (clientId) {
-      const client = await getClientTwo(clientId)
+    if (categoryId) {
+      const category = await getCategoryTwo(categoryId)
 
-      if (!client) {
+      if (!category) {
         return (
           <>
-            <h2 className='mb-2 text-2xl'>Client ID #{clientId} not found</h2>
+            <h2 className='mb-2 text-2xl'>
+              Category ID #{categoryId} not found
+            </h2>
             <BackButton title='Go Back' variant='default' />
           </>
         )
       }
 
-      const user = await getUserDetails(client.userId)
+      const user = await getCategoryUser(category.userId)
 
-      if (userId !== client.userId) {
+      if (userId !== category.userId) {
         return (
           <>
             <h2 className='mb-2 text-2xl'>
@@ -114,7 +120,11 @@ export default async function ClientFormPage({
 
       // return client form
 
-      return <ClientForm client={client} user={user} />
+      return (
+        <div className='flex h-dvh w-full rounded-3xl bg-gray-100'>
+          <CategoryForm category={category} user={user} />
+        </div>
+      )
     }
   } catch (error) {
     if (error instanceof Error) {

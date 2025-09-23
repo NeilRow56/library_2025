@@ -6,7 +6,9 @@ import {
   boolean,
   pgEnum,
   varchar,
-  integer
+  integer,
+  primaryKey,
+  index
 } from 'drizzle-orm/pg-core'
 
 export const role = pgEnum('role', ['admin', 'manager', 'team'])
@@ -30,6 +32,11 @@ export const user = pgTable('user', {
     .notNull()
 })
 export type User = typeof user.$inferSelect
+
+export const userRelations = relations(user, ({ many }) => ({
+  book_categories: many(book_categories),
+  borrowings: many(borrowings)
+}))
 
 export const session = pgTable('session', {
   id: text('id').primaryKey(),
@@ -78,20 +85,6 @@ export const verification = pgTable('verification', {
     .notNull()
 })
 
-export const clients = pgTable('clients', {
-  id: text('id')
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  name: varchar('name').notNull(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => user.id, { onDelete: 'restrict' }),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow()
-})
-
-export type Client = typeof clients.$inferSelect
-
 export const book_categories = pgTable('book_categories', {
   id: text('id')
     .primaryKey()
@@ -104,7 +97,9 @@ export const book_categories = pgTable('book_categories', {
 export type BookCategories = typeof book_categories.$inferSelect
 
 export const books = pgTable('books', {
-  id: text('id').primaryKey(),
+  id: text('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   bookCategoriesId: text('categories_id')
     .notNull()
     .references(() => book_categories.id, { onDelete: 'cascade' }),
@@ -122,8 +117,38 @@ export const books = pgTable('books', {
 })
 export type Books = typeof books.$inferSelect
 
+// Join table for Books and Categories. A book can have many categories. A category can have many books
+export const books_to_categories = pgTable(
+  'books_to_categories',
+  {
+    bookId: text('book_id').references(() => books.id, {
+      onDelete: 'restrict'
+    }),
+    categoriesId: text('categories_id').references(() => book_categories.id, {
+      onDelete: 'restrict'
+    })
+  },
+  table => ({
+    pk: primaryKey({ columns: [table.bookId, table.categoriesId] }),
+    bookIdIndex: index('bookIdIndex').on(table.bookId)
+  })
+)
+// a category belongs to one user. Each category can have many books
+export const bookCategoryRelations = relations(
+  book_categories,
+  ({ one, many }) => ({
+    user: one(user, {
+      fields: [book_categories.userId],
+      references: [user.id]
+    }),
+    books: many(books)
+  })
+)
+
 export const borrowings = pgTable('borrowings', {
-  id: text('id').primaryKey(),
+  id: text('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   bookId: text('books_id')
     .notNull()
     .references(() => books.id, { onDelete: 'cascade' }),
@@ -135,14 +160,24 @@ export const borrowings = pgTable('borrowings', {
   return_date: timestamp({ withTimezone: true })
 })
 
-// BORROWINGS RELATIONS TO COMPLETE
+// BORROWINGS RELATIONS
+export const borrowingsRelations = relations(borrowings, ({ one }) => ({
+  user: one(user, {
+    fields: [borrowings.userId],
+    references: [user.id]
+  })
+}))
 
 export const schema = {
   user,
+  userRelations,
   account,
   session,
   verification,
   book_categories,
+  books_to_categories,
+  bookCategoryRelations,
   books,
-  borrowings
+  borrowings,
+  borrowingsRelations
 }
