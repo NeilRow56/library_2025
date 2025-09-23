@@ -15,6 +15,10 @@ import {
   insertCategorySchema,
   insertCategorySchemaType
 } from '@/zod-schemas/categories'
+import { useAction } from 'next-safe-action/hooks'
+import { saveCategoryAction } from '@/server/categories'
+import { toast } from 'sonner'
+import { LoaderCircle } from 'lucide-react'
 
 interface CategoryFormProps {
   user: User // You must have a user to start a customer - so it is not optional
@@ -33,8 +37,28 @@ export const CategoryForm = ({ user, category }: CategoryFormProps) => {
     defaultValues
   })
 
+  const {
+    execute: executeSave,
+    // result: saveResult,
+    isPending: isSaving,
+    reset: resetSaveAction
+  } = useAction(saveCategoryAction, {
+    onSuccess({ data }) {
+      if (data?.message) {
+        toast.success(
+          `Category ${category ? 'updated ' : 'added'} successfully`
+        )
+        form.reset()
+      }
+    },
+    onError({ error }) {
+      console.log(error)
+      toast.error(`Failed to ${category ? 'update' : 'add'} category`)
+    }
+  })
+
   async function submitForm(data: insertCategorySchemaType) {
-    console.log(data)
+    executeSave(data)
   }
   return (
     <div className='container mx-auto mt-24'>
@@ -74,16 +98,15 @@ export const CategoryForm = ({ user, category }: CategoryFormProps) => {
                   className='w-1/4'
                   variant='default'
                   title='Save'
-                  //   disabled={isSaving}
+                  disabled={isSaving}
                 >
-                  {/* {isSaving ? (
+                  {isSaving ? (
                     <>
                       <LoaderCircle className='animate-spin' /> Saving
                     </>
                   ) : (
                     'Save'
-                  )} */}
-                  Save
+                  )}
                 </Button>
 
                 <Button
@@ -93,7 +116,7 @@ export const CategoryForm = ({ user, category }: CategoryFormProps) => {
                   title='Reset'
                   onClick={() => {
                     form.reset(defaultValues)
-                    // resetSaveAction()
+                    resetSaveAction()
                   }}
                 >
                   Reset

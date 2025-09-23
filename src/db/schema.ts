@@ -121,7 +121,7 @@ export type Books = typeof books.$inferSelect
 export const books_to_categories = pgTable(
   'books_to_categories',
   {
-    bookId: text('book_id').references(() => books.id, {
+    bookId: text('books_id').references(() => books.id, {
       onDelete: 'restrict'
     }),
     categoriesId: text('categories_id').references(() => book_categories.id, {
@@ -141,7 +141,21 @@ export const bookCategoryRelations = relations(
       fields: [book_categories.userId],
       references: [user.id]
     }),
-    books: many(books)
+    books_to_categories: many(books_to_categories)
+  })
+)
+
+export const booksToCategoryRelations = relations(
+  books_to_categories,
+  ({ one }) => ({
+    book_category: one(book_categories, {
+      fields: [books_to_categories.categoriesId],
+      references: [book_categories.id]
+    }),
+    book: one(books, {
+      fields: [books_to_categories.bookId],
+      references: [books.id]
+    })
   })
 )
 
