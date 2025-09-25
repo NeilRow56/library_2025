@@ -78,7 +78,7 @@ export default async function CategoryFormPage({
       // return client form
       if (userId && !categoryId) {
         return (
-          <div className='flex h-dvh w-full rounded-3xl bg-gray-100'>
+          <div className='flex h-dvh w-full bg-gray-100'>
             <CategoryForm user={user} />
           </div>
         )
@@ -121,7 +121,7 @@ export default async function CategoryFormPage({
       // return client form
 
       return (
-        <div className='flex h-dvh w-full rounded-3xl bg-gray-100'>
+        <div className='flex h-dvh w-full bg-gray-100'>
           <CategoryForm category={category} user={user} />
         </div>
       )

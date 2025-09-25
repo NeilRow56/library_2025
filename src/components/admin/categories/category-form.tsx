@@ -19,6 +19,8 @@ import { useAction } from 'next-safe-action/hooks'
 import { saveCategoryAction } from '@/server/categories'
 import { toast } from 'sonner'
 import { LoaderCircle } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { useEffect } from 'react'
 
 interface CategoryFormProps {
   user: User // You must have a user to start a customer - so it is not optional
@@ -26,16 +28,32 @@ interface CategoryFormProps {
 }
 
 export const CategoryForm = ({ user, category }: CategoryFormProps) => {
-  const defaultValues: insertCategorySchemaType = {
-    id: category?.id ?? '',
-    name: category?.name ?? '',
-    userId: category?.userId ?? user.id
+  const searchParams = useSearchParams()
+  const hasCategoryId = searchParams.has('categoryId')
+
+  const emptyValues: insertCategorySchemaType = {
+    id: '',
+    name: '',
+    userId: user.id ?? ''
   }
+
+  const defaultValues: insertCategorySchemaType = hasCategoryId
+    ? {
+        id: category?.id ?? '',
+        name: category?.name ?? '',
+        userId: category?.userId ?? user.id
+      }
+    : emptyValues
+
   const form = useForm<insertCategorySchemaType>({
     resolver: zodResolver(insertCategorySchema),
     mode: 'onBlur',
     defaultValues
   })
+
+  useEffect(() => {
+    form.reset(hasCategoryId ? defaultValues : emptyValues)
+  }, [searchParams.get('categoryId')]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const {
     execute: executeSave,
@@ -61,8 +79,8 @@ export const CategoryForm = ({ user, category }: CategoryFormProps) => {
     executeSave(data)
   }
   return (
-    <div className='container mx-auto mt-24'>
-      <div className='flex flex-col gap-1 text-center sm:px-8'>
+    <div className='container mx-auto'>
+      <div className='mx-auto mt-48 flex max-w-xl flex-col gap-1 rounded-3xl bg-white p-8 text-center sm:px-2'>
         {/* <DisplayServerActionResponse result={saveResult} /> */}
         <div className='items-center justify-center'>
           <h2 className='text-primary text-2xl font-bold lg:text-3xl'>
@@ -73,7 +91,7 @@ export const CategoryForm = ({ user, category }: CategoryFormProps) => {
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(submitForm)}
-            className='mx-auto mt-8 flex w-4xl flex-col gap-4 rounded-lg border p-8 md:gap-8 xl:flex-row'
+            className='mx-auto mt-8 flex min-w-sm flex-col gap-4 rounded-xl border p-8 md:min-w-md md:gap-8 xl:flex-row'
           >
             <div className='flex w-full flex-col gap-4'>
               <FormField
@@ -92,7 +110,7 @@ export const CategoryForm = ({ user, category }: CategoryFormProps) => {
                 nameInSchema='name'
               />
 
-              <div className='flex max-w-lg justify-between'>
+              <div className='flex max-w-md justify-between'>
                 <Button
                   type='submit'
                   className='w-1/4'

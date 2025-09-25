@@ -31,6 +31,12 @@ export async function getCategoryTwo(id: string) {
   return category[0]
 }
 
+export async function categoryAlreadyExists(name: string) {
+  return db.query.book_categories.findFirst({
+    where: eq(book_categories.name, name)
+  })
+}
+
 export const deleteCategory = async (id: string) => {
   try {
     await db.delete(book_categories).where(eq(book_categories.id, id))
@@ -64,9 +70,15 @@ export const saveCategoryAction = actionClient
 
       // throw Error('test error client create action')
 
-      // New Client
-      // All new clients are active by default - no need to set active to true
+      // New Category
+
       // createdAt and updatedAt are set by the database
+
+      const existingCategory = await categoryAlreadyExists(category.name)
+
+      if (existingCategory) {
+        throw Error(`Category already exists. Please choose another category`)
+      }
 
       if (category.id === '') {
         const result = await db
@@ -77,13 +89,13 @@ export const saveCategoryAction = actionClient
             userId: category.userId
           })
           .returning({ insertedId: book_categories.id })
-        redirect('/admin/categories')
+
         return {
           message: `Client ID #${result[0].insertedId} created successfully`
         }
       }
 
-      // Existing client
+      // Existing category
       // updatedAt is set by the database
       const result = await db
         .update(book_categories)
@@ -91,10 +103,10 @@ export const saveCategoryAction = actionClient
           name: category.name,
           userId: category.userId
         })
-        // ! confirms customer.id will always exist for the update function
+        // ! confirms category.id will always exist for the update function
         .where(eq(book_categories.id, category.id!))
         .returning({ updatedId: book_categories.id })
-      redirect('/admin/clients')
+
       return {
         message: `Client ID #${result[0].updatedId} updated successfully`
       }

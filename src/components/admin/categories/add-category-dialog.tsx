@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input'
 import { InputWithLabel } from '@/components/form/input-with-label'
 import { Button } from '@/components/ui/button'
 import { LoaderCircle } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
 
 type Props = {
   open: boolean
@@ -32,16 +33,32 @@ type Props = {
 }
 
 function AddCategoryDialog({ setOpen, open, category, user }: Props) {
-  const defaultValues: insertCategorySchemaType = {
-    id: category?.id ?? '',
-    name: category?.name ?? '',
-    userId: category?.userId ?? user.id
+  const searchParams = useSearchParams()
+  const hasCategoryId = searchParams.has('categoryId')
+
+  const emptyValues: insertCategorySchemaType = {
+    id: '',
+    name: '',
+    userId: user.id ?? ''
   }
+
+  const defaultValues: insertCategorySchemaType = hasCategoryId
+    ? {
+        id: category?.id ?? '',
+        name: category?.name ?? '',
+        userId: category?.userId ?? user.id
+      }
+    : emptyValues
+
   const form = useForm<insertCategorySchemaType>({
     resolver: zodResolver(insertCategorySchema),
     mode: 'onBlur',
     defaultValues
   })
+
+  useEffect(() => {
+    form.reset(hasCategoryId ? defaultValues : emptyValues)
+  }, [searchParams.get('categoryId')]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const {
     execute: executeSave,
@@ -59,7 +76,10 @@ function AddCategoryDialog({ setOpen, open, category, user }: Props) {
     },
     onError({ error }) {
       console.log(error)
-      toast.error(`Failed to ${category ? 'update' : 'add'} category`)
+      toast.error(
+        `Failed to ${category ? 'update' : 'add'} category. The category may exist already`
+      )
+      form.reset()
     }
   })
 

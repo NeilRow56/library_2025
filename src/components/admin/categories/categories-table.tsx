@@ -7,13 +7,6 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog'
 
 import { PencilIcon } from 'lucide-react'
 
@@ -23,11 +16,13 @@ import { EmptyState } from '@/components/shared/emply-state'
 
 import DeleteCategoryButton from './delete-category-button'
 import { Button } from '@/components/ui/button'
-import { AddCategoryButton } from './create-category-button'
+
 import { BackButton } from '@/components/shared/back-button'
 import { book_categories } from '@/db/schema'
 import { and, asc, eq } from 'drizzle-orm'
 import { db } from '@/db'
+import Link from 'next/link'
+import { AddCategoryButton } from './create-category-button'
 
 export default async function CategoriesByUserId2Table() {
   const { userId } = await getCurrentUserId()
@@ -62,23 +57,23 @@ export default async function CategoriesByUserId2Table() {
           </div>
 
           <div className='- mt-12 flex w-full justify-center'>
-            {/* <Button asChild size='lg' className='i flex w-[200px]'>
-            <Link href='/admin/categories/form'>Create Category</Link>
-          </Button> */}
-            <AddCategoryButton user={user} />
+            <Button asChild size='lg' className='i flex w-[200px]'>
+              <Link href='/admin/categories/form'>Create Category</Link>
+            </Button>
+            {/* <AddCategoryButton user={user} /> */}
           </div>
         </>
       )
     }
 
     return (
-      <div className='container mx-auto my-6 max-w-2xl'>
-        <div className='flex w-full items-center justify-between'>
+      <div className='container mx-auto my-12 max-w-2xl'>
+        <div className='mb-12 flex w-full items-center justify-between'>
           <span className='text-xl font-bold'>Categories</span>
 
           {/* <Button asChild size='sm' className='flex'>
-          <Link href='/admin/clients/form'>Create category</Link>
-        </Button> */}
+            <Link href='/admin/categories/form'>Create category</Link>
+          </Button> */}
           <AddCategoryButton user={user} />
         </div>
 
@@ -104,24 +99,16 @@ export default async function CategoriesByUserId2Table() {
                 <TableCell>{category.name}</TableCell>
 
                 <TableCell className='space-x-2 text-right'>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant='ghost' className='cursor-pointer'>
-                        <PencilIcon className='size-4 text-red-500' />
-                      </Button>
-                    </DialogTrigger>
-
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Edit Category</DialogTitle>
-                        Client Form
-                      </DialogHeader>
-                    </DialogContent>
-                  </Dialog>
-                  {/* <Button variant='ghost' className='mr-2 cursor-pointer'>
-                    <PencilIcon />
-                  </Button> */}
-                  <DeleteCategoryButton categoryId={category.id} />
+                  <div className='mr-auto gap-5 space-x-2'>
+                    <Button asChild variant='outline'>
+                      <Link
+                        href={`/admin/categories/form?categoryId=${category.id}`}
+                      >
+                        <PencilIcon />
+                      </Link>
+                    </Button>
+                    <DeleteCategoryButton categoryId={category.id} />
+                  </div>
                 </TableCell>
               </TableRow>
             ))}
