@@ -19,7 +19,7 @@ import { useAction } from 'next-safe-action/hooks'
 import { saveCategoryAction } from '@/server/categories'
 import { toast } from 'sonner'
 import { LoaderCircle } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 
 interface CategoryFormProps {
@@ -29,6 +29,7 @@ interface CategoryFormProps {
 
 export const CategoryForm = ({ user, category }: CategoryFormProps) => {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const hasCategoryId = searchParams.has('categoryId')
 
   const emptyValues: insertCategorySchemaType = {
@@ -66,6 +67,7 @@ export const CategoryForm = ({ user, category }: CategoryFormProps) => {
         toast.success(
           `Category ${category ? 'updated ' : 'added'} successfully`
         )
+        router.push('/admin/categories')
         form.reset()
       }
     },

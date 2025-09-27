@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input'
 import { InputWithLabel } from '@/components/form/input-with-label'
 import { Button } from '@/components/ui/button'
 import { LoaderCircle } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 type Props = {
   open: boolean
@@ -34,6 +34,7 @@ type Props = {
 
 function AddCategoryDialog({ setOpen, open, category, user }: Props) {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const hasCategoryId = searchParams.has('categoryId')
 
   const emptyValues: insertCategorySchemaType = {
@@ -71,15 +72,13 @@ function AddCategoryDialog({ setOpen, open, category, user }: Props) {
         toast.success(
           `Category ${category ? 'updated ' : 'added'} successfully`
         )
+        router.push('/admin/categories')
         form.reset()
       }
     },
     onError({ error }) {
       console.log(error)
-      toast.error(
-        `Failed to ${category ? 'update' : 'add'} category. The category may exist already`
-      )
-      form.reset()
+      toast.error(`Failed to ${category ? 'update' : 'add'} category`)
     }
   })
 

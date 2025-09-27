@@ -19,7 +19,7 @@ export const getCurrentUserId = async () => {
   })
 
   if (!session) {
-    redirect('/auth/sign-in')
+    redirect('/auth')
   }
 
   const userId = session.session.userId

@@ -12,6 +12,7 @@ import {
 
 import { eq } from 'drizzle-orm'
 import { flattenValidationErrors } from 'next-safe-action'
+import { revalidatePath } from 'next/cache'
 
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'

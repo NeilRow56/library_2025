@@ -69,7 +69,7 @@ export default async function CategoriesByUserId2Table() {
     return (
       <div className='container mx-auto my-12 max-w-2xl'>
         <div className='mb-12 flex w-full items-center justify-between'>
-          <span className='text-xl font-bold'>Categories</span>
+          <span className='text-3xl font-bold'>Categories</span>
 
           {/* <Button asChild size='sm' className='flex'>
             <Link href='/admin/categories/form'>Create category</Link>

@@ -31,7 +31,7 @@ export default async function CategoryFormPage({
     })
 
     if (!session) {
-      redirect('/auth/sign-in')
+      redirect('/auth')
     }
 
     const userId = session.session.userId
