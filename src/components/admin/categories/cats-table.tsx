@@ -2,13 +2,12 @@
 
 import { Category, columns } from '@/app/(admin)/admin/categories/columns'
 
-import { DataTable } from '@/components/table-components/data-table'
-
 import React from 'react'
 
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { EmptyState } from '@/components/shared/emply-state'
+import { DataTableWithOwnPpagination } from '@/components/table-components/data-table-with-own-pagination'
 
 type Props = {
   data: {
@@ -61,7 +60,7 @@ export default function CatsTable({ data, total }: Props) {
         </Button>
         {/* <AddCategoryButton user={user} /> */}
       </div>
-      <DataTable
+      <DataTableWithOwnPpagination
         data={data}
         columns={columns}
         total={total}

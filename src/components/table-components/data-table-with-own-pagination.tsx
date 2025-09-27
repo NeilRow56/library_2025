@@ -1,18 +1,18 @@
 'use client'
 
-import * as React from 'react'
 import {
   ColumnDef,
   ColumnFiltersState,
-  RowData,
-  SortingState,
-  VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable
+  PaginationState,
+  RowData,
+  SortingState,
+  useReactTable,
+  VisibilityState
 } from '@tanstack/react-table'
 
 import {
@@ -23,16 +23,13 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
+import { DataTableViewOptions } from './data-table-view-options'
 
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
-import { DataTablePagination } from './data-table-pagination'
+import DataTableInputFilter from './data-table-input-filter'
+import React, { useEffect } from 'react'
+import { pageSize } from '@/lib/utils'
+import { usePathname, useRouter } from 'next/navigation'
+import { DataTablePaginationManual } from './data-table-pagination-manual'
 
 declare module '@tanstack/react-table' {
   interface TableMeta<TData extends RowData> {
@@ -44,14 +41,17 @@ declare module '@tanstack/react-table' {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
-
+  total: number
+  filter_column: string
   onRowDelete: (item: TData) => void
   onRowEdit: (item: TData) => void
 }
 
-export function DataTable<TData, TValue>({
+export function DataTableWithOwnPpagination<TData, TValue>({
   columns,
   data,
+  total,
+  filter_column,
   onRowDelete,
   onRowEdit
 }: DataTableProps<TData, TValue>) {
@@ -61,18 +61,25 @@ export function DataTable<TData, TValue>({
   )
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+
+  const [pagination, setPagination] = React.useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: pageSize
+  })
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
+    getPaginationRowModel: getPaginationRowModel(),
+    onPaginationChange: setPagination,
+    manualPagination: true,
+    rowCount: total,
     meta: {
       onDelete: item => onRowDelete(item),
       onEdit: item => onRowEdit(item)
@@ -81,57 +88,35 @@ export function DataTable<TData, TValue>({
       sorting,
       columnFilters,
       columnVisibility,
-      rowSelection
+      pagination
     }
   })
 
+  const pathname = usePathname()
+  const router = useRouter()
+
+  useEffect(() => {
+    const page = pagination.pageIndex * pageSize
+    const take = pagination.pageIndex * pageSize + pageSize
+
+    router.push(`${pathname}?page=${page}&limit=${take}`)
+  }, [pagination, pathname, router])
+
   return (
-    <div>
-      <div className='flex items-center px-6 py-4'>
-        <Input
-          placeholder='Filter categories...'
-          value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-          onChange={event =>
-            table.getColumn('name')?.setFilterValue(event.target.value)
-          }
-          className='max-w-sm'
-        />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant='outline' className='ml-auto'>
-              Columns
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align='end'>
-            {table
-              .getAllColumns()
-              .filter(column => column.getCanHide())
-              .map(column => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className='capitalize'
-                    checked={column.getIsVisible()}
-                    onCheckedChange={value => column.toggleVisibility(!!value)}
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                )
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+    <div className='container mx-auto mt-12 max-w-4xl space-y-5'>
+      <div className='flex justify-between'>
+        <DataTableInputFilter table={table} column={filter_column} />
+        <DataTableViewOptions table={table} />
       </div>
-      <div className='m-6 overflow-hidden rounded-md border p-6'>
+
+      <div className='overflow-hidden rounded-md border'>
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map(header => {
                   return (
-                    <TableHead
-                      className='border-b border-blue-600 font-bold text-blue-600'
-                      key={header.id}
-                    >
+                    <TableHead key={header.id}>
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -174,14 +159,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className='flex w-full items-center px-6'>
-        <div className='text-muted-foreground flex-1 text-sm'>
-          {table.getFilteredRowModel().rows.length} row(s).
-        </div>
-        <div className='flex-1 items-center justify-end space-x-4 py-4'>
-          <DataTablePagination table={table} />
-        </div>
-      </div>
+      <DataTablePaginationManual table={table} />
     </div>
   )
 }
